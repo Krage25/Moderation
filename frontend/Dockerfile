@@ -1,17 +1,29 @@
-FROM python:3.12.3-slim
+# Use official Node.js image
+FROM node:20-alpine AS build
 
+# Set working directory
 WORKDIR /app
 
-# Copy all files into the container
-# COPY . .
-COPY requirements.txt .
+# Copy package.json and package-lock.json
+COPY package*.json ./
 
 # Install dependencies
-RUN pip install --no-cache-dir -r requirements.txt
+RUN npm install autoprefixer@10.4.21 postcss@8.5.4 tailwindcss@3.4.17 lucide-react
 
+# Copy rest of the application
 COPY . .
 
+# Build the React app
+RUN npm run build
+
+# Use nginx to serve the build files
+FROM nginx:alpine
+
+# Copy build output to nginx html folder
+COPY --from=build /app/build /usr/share/nginx/html
+
+# Expose port 80
 EXPOSE 80
 
-# Run Streamlit app
-CMD ["streamlit", "run", "app.py", "--server.port=80", "--server.address=0.0.0.0"]
+# Start nginx
+CMD ["nginx", "-g", "daemon off;"]

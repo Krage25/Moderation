@@ -3,7 +3,7 @@ version: "3.9"
 services:
   frontend:
     build: .
-    container_name: frontend-pipeline
+    container_name: react-frontend
     restart: always
     ports:
       - "80:80"
