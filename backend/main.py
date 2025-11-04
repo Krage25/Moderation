@@ -21,6 +21,7 @@ from urllib.parse import urlparse, urlunparse
 # === MongoDB setup ===
 # client = MongoClient("mongodb://10.226.49.29:27017/")
 client = MongoClient("mongodb://cdac:user%40cdac!@13.201.47.59:27017/?authSource=csmart")
+# db = client["link_monitor"]
 db = client["csmart"]
 links_col = db["ai_video_links"]
 logs_col = db["download_logs"]
