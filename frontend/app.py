@@ -7,6 +7,17 @@ import os
 
 # --- Backend API ---
 API_URL = "http://13.201.47.59:8080"
+# API_URL = "http://10.226.49.29:8080"
+
+# --- Helper: Convert AM/PM formatted date string → ISO for backend
+def parse_date_str(date_str):
+    try:
+        return datetime.strptime(date_str, "%d %b %Y, %I:%M %p").isoformat()
+    except Exception:
+        return date_str
+
+
+
 
 # --- Timezone ---
 IST = pytz.timezone("Asia/Kolkata")
@@ -101,15 +112,27 @@ if page == "add_links":
 
     col1, col2 = st.columns(2)
     now = datetime.now(IST)
+
     with col1:
         from_date = st.date_input("From Date", now.date())
-        from_time = st.time_input("From Time", time(0, 0))
+        from_time = st.time_input("From Time (12-hour format)", time(0, 0))
+        # 🕒 Show formatted version below the input
+        st.caption(f"🕒 Selected: {from_time.strftime('%I:%M %p')}")
+
     with col2:
         to_date = st.date_input("To Date", now.date())
-        to_time = st.time_input("To Time", now.time())
+        to_time = st.time_input("To Time (12-hour format)", now.time())
+        st.caption(f"🕒 Selected: {to_time.strftime('%I:%M %p')}")
 
+    # Combine & localize to IST
     from_dt = IST.localize(datetime.combine(from_date, from_time))
     to_dt = IST.localize(datetime.combine(to_date, to_time))
+
+    # ✅ Show selected range for confirmation
+    st.info(
+        f"**Range:** {from_dt.strftime('%d %b %Y, %I:%M %p')} → {to_dt.strftime('%d %b %Y, %I:%M %p')}"
+    )
+
 
     file_type = st.selectbox("Select Export Format", ["pdf", "docx"])
 
@@ -211,11 +234,14 @@ elif page == "logs":
                 # --- PDF Download
                 with col1:
                     try:
+                        from_date_iso = parse_date_str(log["from_date"])
+                        to_date_iso = parse_date_str(log["to_date"])
+
                         export_pdf = requests.get(
                             f"{API_URL}/export/",
                             params={
-                                "from_date": log["from_date"],
-                                "to_date": log["to_date"],
+                                "from_date": from_date_iso,
+                                "to_date": to_date_iso,
                                 "file_type": "pdf",
                             },
                             timeout=20,
@@ -237,11 +263,14 @@ elif page == "logs":
                 # --- DOCX Download
                 with col2:
                     try:
+                        from_date_iso = parse_date_str(log["from_date"])
+                        to_date_iso = parse_date_str(log["to_date"])
+
                         export_docx = requests.get(
                             f"{API_URL}/export/",
                             params={
-                                "from_date": log["from_date"],
-                                "to_date": log["to_date"],
+                                "from_date": from_date_iso,
+                                "to_date": to_date_iso,
                                 "file_type": "docx",
                             },
                             timeout=20,
@@ -259,3 +288,4 @@ elif page == "logs":
                             st.error("❌ Failed to load DOCX.")
                     except Exception as e:
                         st.error(f"🚨 {str(e)}")
+
