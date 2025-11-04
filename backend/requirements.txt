@@ -1,0 +1,10 @@
+fastapi
+uvicorn
+pydantic
+pymongo
+pandas
+reportlab
+python-docx
+pytz
+streamlit
+requests

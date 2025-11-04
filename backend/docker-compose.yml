@@ -1,0 +1,12 @@
+version: "3.9"
+
+services:
+  backend:
+    build: .
+    container_name: backend-pipeline
+    restart: always
+    ports:
+      - "8080:8080"
+    volumes:
+      - .:/app
+    working_dir: /app
